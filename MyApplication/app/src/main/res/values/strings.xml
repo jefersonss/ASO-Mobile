@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">ASO-mobile</string>
+    <string name="patients">Pacientes registrados!</string>
+    <string name="action_settings">Settings</string>
+</resources>

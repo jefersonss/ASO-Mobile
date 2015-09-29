@@ -1,16 +1,23 @@
 package aso.unisinos.br.aso_mobile;
 
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
+import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
+    public final static String urlString = "http://10.0.0.103:8080/aso/aso/retrieve/1";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setProgressBarIndeterminateVisibility(true);
+        AsyncTask<String, String, String> result = new CallAPI().execute(urlString);
         setContentView(R.layout.activity_main);
     }
 

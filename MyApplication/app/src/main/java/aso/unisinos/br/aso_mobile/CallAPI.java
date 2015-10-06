@@ -1,8 +1,14 @@
 package aso.unisinos.br.aso_mobile;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -11,8 +17,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 
 public class CallAPI extends AsyncTask<String, String, String> {
+    ExpandableListAdapter listAdapter;
+    ExpandableListView expListView;
+    List<String> listDataHeader;
+    HashMap<String, List<String>> listDataChild;
 
     @Override
     protected String doInBackground(String... params) {
@@ -50,7 +63,7 @@ public class CallAPI extends AsyncTask<String, String, String> {
     }
 
     protected void onPostExecute(String result) {
-        System.out.println(result);
+        System.out.println("carregado");
     }
 
 } // end CallAPI

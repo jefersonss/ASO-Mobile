@@ -1,7 +1,10 @@
 package aso.unisinos.br.aso_mobile;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -36,10 +39,10 @@ public class DetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
+        PhoneStorageHelper storageHelper = new PhoneStorageHelper();
 
         Intent intent = getIntent();
         Integer message = intent.getIntExtra(ExpandableListAdapter.EXTRA_MESSAGE, 0);
-        AsyncTask<String, String, String> result = new CallAPI().execute(urlString+message);
 
         ProgressDialog progress = new ProgressDialog(this);
         progress.setTitle("Loading");
@@ -48,7 +51,14 @@ public class DetailActivity extends AppCompatActivity {
 
         String patientDetail = "Patient";
         try {
-            patientDetail = result.get();
+            String patientCallURL = urlString + message;
+            if(isOnline()) {
+                AsyncTask<String, String, String> result = new CallAPI().execute(patientCallURL);
+                patientDetail = result.get();
+                storageHelper.savePatientInfo(patientCallURL, patientDetail);
+            }else{
+                patientDetail = storageHelper.retrievePatientInfo(patientCallURL);
+            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
@@ -139,23 +149,24 @@ public class DetailActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_detail, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }

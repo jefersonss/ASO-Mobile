@@ -43,7 +43,7 @@ public class CallAPI extends AsyncTask<String, String, String> {
             in = new BufferedInputStream(urlConnection.getInputStream());
         } catch (Exception e ) {
             System.out.println(e.getMessage());
-            return e.getMessage();
+            return "Error in call";
         }
         try {
             resultToDisplay = convertInputStreamToString(in);

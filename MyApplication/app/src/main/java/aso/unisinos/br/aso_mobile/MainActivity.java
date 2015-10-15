@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        PhoneStorageHelper storageHelper = new PhoneStorageHelper();
 
         ProgressDialog progress = new ProgressDialog(this);
         progress.setTitle("Loading");
@@ -48,8 +49,9 @@ public class MainActivity extends AppCompatActivity {
             if(isOnline()){
                 AsyncTask<String, String, String> result = new CallAPI().execute(urlString);
                 jsonResult = result.get();
+                storageHelper.storePatientList(jsonResult);
             }else{
-                jsonResult = new PhoneStorageHelper().getPatientList();
+                jsonResult = storageHelper.getPatientList();
             }
             expListView = (ExpandableListView) findViewById(R.id.expandableListView);
 

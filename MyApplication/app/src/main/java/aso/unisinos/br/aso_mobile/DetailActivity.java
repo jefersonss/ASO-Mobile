@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.ExpandableListView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -54,6 +56,7 @@ public class DetailActivity extends AppCompatActivity {
         }
 
         populatePatientInfo(patientDetail);
+
         progress.dismiss();
     }
 
@@ -70,20 +73,42 @@ public class DetailActivity extends AppCompatActivity {
             textView = (TextView) findViewById(R.id.sex);
             createTextView(textView, jsonObject.getString("gender"));
 
-            textView = (TextView) findViewById(R.id.disease);
-            JSONArray diseases = jsonObject.getJSONArray("disease");
-            String diseaseString = "";
-            for (int i=0; i<diseases.length(); i++){
-                JSONObject diseaseObj = diseases.getJSONObject(i);
-                String diseaseName = diseaseObj.getString("name");
-                diseaseString += diseaseName+"\n";
-            }
+            WebView charts = (WebView) findViewById(R.id.chartView);
+            createWebView(charts);
+            charts.loadUrl(jsonObject.getString("chartUrl"));
+            charts.zoomOut();
 
-            createTextView(textView, jsonObject.getString("gender"));
+            WebView comparisonCharts = (WebView) findViewById(R.id.comparisonChartView);
+            createWebView(comparisonCharts);
+            comparisonCharts.loadUrl(jsonObject.getString("bloodPressureComparisonChartUrl"));
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private void createWebView(WebView charts) {
+        charts.getSettings().setBuiltInZoomControls(false);
+        charts.getSettings().setSupportZoom(false);
+        charts.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+        charts.getSettings().setAllowFileAccess(true);
+        charts.getSettings().setDomStorageEnabled(true);
+        final ProgressDialog progDialog = new ProgressDialog(this);
+
+        charts.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                progDialog.setTitle("Loading");
+                progDialog.setMessage("Wait while loading...");
+                progDialog.show();
+                view.loadUrl(url);
+                return true;
+            }
+            @Override
+            public void onPageFinished(WebView view, final String url) {
+                progDialog.dismiss();
+            }
+        });
     }
 
     private void createTextView(TextView textView, String message) {

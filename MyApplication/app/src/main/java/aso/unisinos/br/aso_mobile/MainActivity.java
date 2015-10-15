@@ -1,6 +1,9 @@
 package aso.unisinos.br.aso_mobile;
 
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,9 +37,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        AsyncTask<String, String, String> result = new CallAPI().execute(urlString);
+
+        ProgressDialog progress = new ProgressDialog(this);
+        progress.setTitle("Loading");
+        progress.setMessage("Wait while loading...");
+        progress.show();
+
         try {
-            String jsonResult = result.get();
+            String jsonResult = "";
+            if(isOnline()){
+                AsyncTask<String, String, String> result = new CallAPI().execute(urlString);
+                jsonResult = result.get();
+            }else{
+                jsonResult = new PhoneStorageHelper().getPatientList();
+            }
             expListView = (ExpandableListView) findViewById(R.id.expandableListView);
 
             // preparing list data
@@ -49,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        progress.dismiss();
     }
 
     @Override
@@ -94,5 +110,11 @@ public class MainActivity extends AppCompatActivity {
             }
             listDataChild.put(listDataHeader.get(listDataHeader.size()-1), patients);
         }
+    }
+
+    public boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }

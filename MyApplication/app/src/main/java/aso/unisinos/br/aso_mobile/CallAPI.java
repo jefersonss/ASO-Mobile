@@ -1,6 +1,9 @@
 package aso.unisinos.br.aso_mobile;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.view.View;
 import android.widget.EditText;
@@ -65,5 +68,4 @@ public class CallAPI extends AsyncTask<String, String, String> {
     protected void onPostExecute(String result) {
         System.out.println("carregado");
     }
-
 } // end CallAPI

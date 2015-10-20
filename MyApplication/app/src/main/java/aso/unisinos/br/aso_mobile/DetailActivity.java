@@ -9,6 +9,7 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
@@ -55,25 +56,37 @@ public class DetailActivity extends AppCompatActivity {
             if(isOnline()) {
                 AsyncTask<String, String, String> result = new CallAPI().execute(patientCallURL);
                 patientDetail = result.get();
-                storageHelper.savePatientInfo(patientCallURL, patientDetail);
+                //storageHelper.savePatientInfo(patientCallURL, patientDetail, getApplicationContext());
             }else{
-                patientDetail = storageHelper.retrievePatientInfo(patientCallURL);
+                //patientDetail = storageHelper.retrievePatientInfo(patientCallURL, getApplicationContext());
             }
+
+            JSONObject jsonObject = new JSONObject(patientDetail);
+            populatePatientInfo(jsonObject);
+
+            expListView = (ExpandableListView) findViewById(R.id.relatedPatients);
+
+            prepareListData(jsonObject);
+            listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
+            listAdapter.setInflater((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE), this);
+            // setting list adapter
+            expListView.setAdapter(listAdapter);
+
+            LinearLayout.LayoutParams mParam = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, listAdapter.getGroupCount()*200);
+            expListView.setLayoutParams(mParam);
+
+            progress.dismiss();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
             e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
-
-        populatePatientInfo(patientDetail);
-
-        progress.dismiss();
     }
 
-    private void populatePatientInfo(String patientJson) {
+    private void populatePatientInfo(JSONObject jsonObject) {
         try {
-            JSONObject jsonObject = new JSONObject(patientJson);
-
             TextView textView = (TextView) findViewById(R.id.name);
             createTextView(textView, jsonObject.getString("name"));
 
@@ -82,6 +95,9 @@ public class DetailActivity extends AppCompatActivity {
 
             textView = (TextView) findViewById(R.id.sex);
             createTextView(textView, jsonObject.getString("gender"));
+
+            textView = (TextView) findViewById(R.id.diagnosis);
+            createTextView(textView, jsonObject.getString("diseases"));
 
             WebView charts = (WebView) findViewById(R.id.chartView);
             createWebView(charts);
@@ -131,20 +147,22 @@ public class DetailActivity extends AppCompatActivity {
         listDataHeader = new ArrayList<String>();
         listDataChild = new HashMap<String, List<JSONObject>>();
 
-        Iterator<String> keysItr = jObj.keys();
-        while (keysItr.hasNext()) {
-            String key = keysItr.next();
-            listDataHeader.add(key);
+        JSONArray patientsWithSameDiagnosisJSON = jObj.getJSONArray("patientsWithSameDiagnosis");
+        JSONArray patientsTakingSameMedicationJSON = jObj.getJSONArray("patientsTakingSameMedication");
 
-            JSONArray jArr = jObj.getJSONArray(key);
-            List<JSONObject> patients = new ArrayList<JSONObject>();
-            for (int i = 0; i < jArr.length(); i++) {
-                JSONObject obj = jArr.getJSONObject(i);
-                String name = (String) obj.get("name");
-                patients.add(obj);
-            }
-            listDataChild.put(listDataHeader.get(listDataHeader.size() - 1), patients);
+        populateListHeaderAndChild("Pacientes com mesmo diagnóstico", patientsWithSameDiagnosisJSON);
+        populateListHeaderAndChild("Pacientes tomando mesma medicação", patientsTakingSameMedicationJSON);
+    }
+
+    private void populateListHeaderAndChild(String headerTitle, JSONArray patientsWithSameDiagnosisJSON) throws JSONException {
+        listDataHeader.add(headerTitle);
+        List<JSONObject> patients = new ArrayList<JSONObject>();
+        for (int i = 0; i < patientsWithSameDiagnosisJSON.length(); i++) {
+            JSONObject obj = patientsWithSameDiagnosisJSON.getJSONObject(i);
+            String name = (String) obj.get("name");
+            patients.add(obj);
         }
+        listDataChild.put(listDataHeader.get(listDataHeader.size() - 1), patients);
     }
 
     @Override
@@ -167,6 +185,7 @@ public class DetailActivity extends AppCompatActivity {
     public boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
+        return true;
+        //return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }

@@ -27,6 +27,17 @@
         <TextView android:id="@+id/sex" android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
+        <TextView android:text="Diagnóstico: " android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView android:id="@+id/diagnosis" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ExpandableListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="65px"
+            android:id="@+id/relatedPatients"/>
+
         <WebView
             android:layout_width="350dp"
             android:layout_height="390dp"

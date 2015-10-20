@@ -13,8 +13,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
+import android.widget.LinearLayout;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,19 +52,28 @@ public class MainActivity extends AppCompatActivity {
             if(isOnline()){
                 AsyncTask<String, String, String> result = new CallAPI().execute(urlString);
                 jsonResult = result.get();
-                storageHelper.storePatientList(jsonResult);
+                //storageHelper.storePatientList(jsonResult, getApplicationContext());
             }else{
-                jsonResult = storageHelper.getPatientList();
+                //jsonResult = storageHelper.getPatientList(getApplicationContext());
             }
             expListView = (ExpandableListView) findViewById(R.id.expandableListView);
 
             // preparing list data
-            prepareListData(new JSONObject(jsonResult));
+            JSONObject jsonObject = new JSONObject(jsonResult);
+            prepareListData(jsonObject);
 
             listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
             listAdapter.setInflater((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE), this);
             // setting list adapter
             expListView.setAdapter(listAdapter);
+
+            LinearLayout.LayoutParams mParam = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, listAdapter.getGroupCount()*200);
+            expListView.setLayoutParams(mParam);
+
+            WebView charts = (WebView) findViewById(R.id.patientByDisease);
+            createWebView(charts);
+            charts.loadUrl(jsonObject.getString("patientByDiseaseChart"));
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -69,9 +81,33 @@ public class MainActivity extends AppCompatActivity {
         progress.dismiss();
     }
 
+    private void createWebView(WebView charts) {
+        charts.getSettings().setBuiltInZoomControls(false);
+        charts.getSettings().setSupportZoom(false);
+        charts.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
+        charts.getSettings().setAllowFileAccess(true);
+        charts.getSettings().setDomStorageEnabled(true);
+        final ProgressDialog progDialog = new ProgressDialog(this);
+
+        charts.setWebViewClient(new WebViewClient() {
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                progDialog.setTitle("Loading");
+                progDialog.setMessage("Wait while loading...");
+                progDialog.show();
+                view.loadUrl(url);
+                return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, final String url) {
+                progDialog.dismiss();
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main, menu);
         return super.onCreateOptionsMenu(menu);
@@ -79,9 +115,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()){
             case R.id.action_search:
                 //openSearch();
@@ -117,6 +150,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean isOnline() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
-        return netInfo != null && netInfo.isConnectedOrConnecting();
+        return true;
+        //return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 }

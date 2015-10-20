@@ -64,15 +64,20 @@ public class MainActivity extends AppCompatActivity {
 
             listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
             listAdapter.setInflater((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE), this);
+            listAdapter.setHeaderInBold(true);
             // setting list adapter
             expListView.setAdapter(listAdapter);
 
             LinearLayout.LayoutParams mParam = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, listAdapter.getGroupCount()*200);
             expListView.setLayoutParams(mParam);
 
+            AsyncTask<String, String, String> result = new CallAPI().execute(urlString+"/countByDisease");
+            String chartUrl = result.get();
+            JSONObject jsonChartUrl = new JSONObject(chartUrl);
+
             WebView charts = (WebView) findViewById(R.id.patientByDisease);
             createWebView(charts);
-            charts.loadUrl(jsonObject.getString("patientByDiseaseChart"));
+            charts.loadUrl(jsonChartUrl.getString("patientByDiseaseChart"));
 
         } catch (Exception e) {
             e.printStackTrace();

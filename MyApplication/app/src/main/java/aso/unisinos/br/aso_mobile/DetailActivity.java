@@ -69,6 +69,7 @@ public class DetailActivity extends AppCompatActivity {
             prepareListData(jsonObject);
             listAdapter = new ExpandableListAdapter(this, listDataHeader, listDataChild);
             listAdapter.setInflater((LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE), this);
+            listAdapter.setHeaderInBold(false);
             // setting list adapter
             expListView.setAdapter(listAdapter);
 
@@ -97,7 +98,7 @@ public class DetailActivity extends AppCompatActivity {
             createTextView(textView, jsonObject.getString("gender"));
 
             textView = (TextView) findViewById(R.id.diagnosis);
-            createTextView(textView, jsonObject.getString("diseases"));
+            createTextView(textView, buildDiseaseListString(jsonObject.getJSONArray("diseases")));
 
             WebView charts = (WebView) findViewById(R.id.chartView);
             createWebView(charts);
@@ -111,6 +112,17 @@ public class DetailActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    private String buildDiseaseListString(JSONArray diseasesJsonArray) throws JSONException {
+        StringBuilder diseaseList = new StringBuilder("");
+
+        for(int i = 0; i<diseasesJsonArray.length(); i++){
+            JSONObject jsonObject = diseasesJsonArray.getJSONObject(i);
+            diseaseList.append(jsonObject.getString("name")).append(",");
+        }
+
+        return diseaseList.substring(0, diseaseList.length()-1).toString();
     }
 
     private void createWebView(WebView charts) {

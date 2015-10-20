@@ -3,6 +3,7 @@ package aso.unisinos.br.aso_mobile;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,7 @@ public class ExpandableListAdapter  extends BaseExpandableListAdapter{
     private HashMap<String, List<JSONObject>> _listDataChild;
     private LayoutInflater inflater;
     private Activity activity;
+    private boolean headerInBold;
 
     public ExpandableListAdapter(Context context, List<String> listDataHeader, HashMap<String, List<JSONObject>> listChildData) {
         this._context = context;
@@ -113,7 +115,9 @@ public class ExpandableListAdapter  extends BaseExpandableListAdapter{
         }
 
         TextView lblListHeader = (TextView) convertView.findViewById(R.id.listHeader);
-        lblListHeader.setTypeface(null, Typeface.BOLD);
+        if(headerInBold)
+            lblListHeader.setTypeface(null, Typeface.BOLD);
+
         lblListHeader.setText(headerTitle);
 
         return convertView;
@@ -127,5 +131,9 @@ public class ExpandableListAdapter  extends BaseExpandableListAdapter{
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
         return true;
+    }
+
+    public void setHeaderInBold(boolean headerInBold) {
+        this.headerInBold = headerInBold;
     }
 }
